@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f6f5ef" />
+    <title>NavTatva · Marine observation</title>
+    <link rel="stylesheet" href="/static/vendor/leaflet/leaflet.css" />
+    <link rel="stylesheet" href="/static/style.css?v=__V__" />
+  </head>
+  <body>
+    <header class="masthead">
+      <a href="/" class="brand" aria-label="NavTatva home"
+        ><svg viewBox="0 0 36 32" aria-hidden="true">
+          <path
+            d="M2 11c6-9 11 9 17 0s11 9 15 0M2 20c6-9 11 9 17 0s11 9 15 0"
+          /></svg
+        >NavTatva<span>Marine observation</span></a
+      >
+      <div class="mast-actions">
+        <span class="live-ais-btn" id="live-ais-badge">
+          <i class="live-dot"></i> Live AIS <span id="mast-live-count"></span>
+        </span>
+        <button class="text-button" id="help-open">
+          Field guide <span aria-hidden="true">↗</span>
+        </button>
+      </div>
+    </header>
+    <main id="app">
+      <section class="observation" aria-labelledby="scene-title">
+        <div class="observation-title">
+          <p class="eyebrow" id="observation-index">Satellite observation</p>
+          <h1 id="scene-title">Reading the ocean.</h1>
+          <p id="scene-subtitle" class="subtitle">
+            Choose an observation to begin.
+          </p>
+        </div>
+        <div class="observation-actions">
+          <button class="secondary" id="scene-open">
+            Change scene <span aria-hidden="true">⌄</span></button
+          ><button class="secondary" id="settings-open">Settings</button
+          ><button class="primary" id="run" disabled>
+            Run analysis <span aria-hidden="true">↗</span>
+          </button>
+        </div>
+      </section>
+      <div class="workspace">
+        <section class="chart" aria-label="Observation map">
+          <div class="chart-bar">
+            <span><i class="live-dot"></i>Observation map</span
+            ><button id="fit-map" class="text-button">
+              Recenter <span aria-hidden="true">⌖</span>
+            </button>
+          </div>
+          <div id="mapwrap">
+            <div
+              id="map"
+              aria-label="Interactive map of the selected observation"
+            ></div>
+            <details id="legend" class="map-layers">
+              <summary>Map layers</summary>
+              <div id="layers"></div>
+              <label class="basemap-label"
+                >Background<select id="basemap" aria-label="Map background">
+                  <option>Loading…</option>
+                </select></label
+              >
+            </details>
+            <div id="busy" role="status" aria-live="polite">
+              <span class="spinner"></span
+              ><strong>Reading the observation</strong
+              ><span id="busytext">This may take a moment.</span>
+            </div>
+            <div class="north" aria-hidden="true">N<br />↑</div>
+          </div>
+          <div id="timebar">
+            <button id="play" aria-label="Play vessel timeline">Play</button
+            ><input
+              id="slider"
+              type="range"
+              min="0"
+              max="0"
+              value="0"
+              aria-label="Vessel positions over time"
+            /><span id="tlabel"></span>
+          </div>
+          <div class="chart-footer">
+            <button id="world-map" class="text-button">World view</button>
+            <div class="map-key" aria-label="Map legend">
+              <span><i class="key-area oil" aria-hidden="true"></i>Detected oil</span>
+              <span><i class="key-area origin" aria-hidden="true"></i>Estimated release area</span>
+              <span><i class="key-line backtrack" aria-hidden="true"></i>Oil backtrack</span>
+              <span><i class="key-line forecast" aria-hidden="true"></i>Oil forecast</span>
+              <span><i class="key-line vessel" aria-hidden="true"></i>Vessel tracks · colour by rank</span>
+              <span><i class="key-line gap" aria-hidden="true"></i>Estimated AIS gap</span>
+              <span><i class="key-line simulated" aria-hidden="true"></i>Simulated track · dotted</span>
+            </div>
+            <span id="readout">Drag to explore · Scroll to zoom</span>
+          </div>
+        </section>
+        <aside class="findings" aria-label="Analysis results">
+          <div class="findings-bar">
+            <h2>Findings</h2>
+            <button id="ex-note" class="text-button" disabled>
+              Report <span aria-hidden="true">↗</span>
+            </button>
+          </div>
+          <div id="result" aria-live="polite"></div>
+          <div id="notices" role="status"></div>
+          <section id="ocean-section" class="ocean-card">
+            <div class="section-heading">
+              <h3>Incident conditions</h3>
+              <span id="ocean-badge" class="badge">Observation time</span>
+            </div>
+            <p id="incident-time" class="cell-sub"></p>
+            <div class="ocean-grid">
+              <div class="ocean-cell">
+                <span class="cell-label">Surface Current</span>
+                <strong id="ocean-current-speed">--</strong>
+                <span id="ocean-current-dir" class="cell-sub">--</span>
+              </div>
+              <div class="ocean-cell">
+                <span class="cell-label">10 m Wind</span>
+                <strong id="ocean-wind-speed">--</strong>
+                <span id="ocean-wind-dir" class="cell-sub">--</span>
+              </div>
+              <div class="ocean-cell">
+                <span class="cell-label">Wave Height</span>
+                <strong id="ocean-wave-height">--</strong>
+                <span id="ocean-wave-period" class="cell-sub">--</span>
+              </div>
+              <div class="ocean-cell">
+                <span class="cell-label">Incident AIS</span>
+                <strong id="ocean-vessels-count">--</strong>
+                <span id="ocean-vessels-mode" class="cell-sub">Run analysis for historical AIS</span>
+              </div>
+            </div>
+          </section>
+          <section id="candidate-section" hidden>
+            <div class="section-heading">
+              <h3>Vessel candidates</h3>
+              <span id="candidate-count"></span>
+            </div>
+            <p class="muted small" id="ais-note"></p>
+            <label class="search-label"
+              ><span class="sr-only">Search vessel candidates</span
+              ><input
+                id="vsearch"
+                type="search"
+                placeholder="Find a vessel or MMSI…"
+            /></label>
+            <div id="vessel-list"></div>
+          </section>
+          <details id="drift-details" class="disclosure" open hidden>
+            <summary>
+              Backtracking &amp; forward tracking <span aria-hidden="true">+</span>
+            </summary>
+            <div id="origin"></div>
+          </details>
+          <details id="data-details" class="disclosure">
+            <summary>
+              About this observation <span aria-hidden="true">+</span>
+            </summary>
+            <div id="scene-info"></div>
+            <div id="data-notes"></div>
+            <div class="downloads">
+              <button id="ex-json" class="text-button" disabled>
+                Run data ↗</button
+              ><button id="ex-geo" class="text-button" disabled>
+                Map data ↗
+              </button>
+            </div>
+          </details>
+        </aside>
+      </div>
+      <footer class="page-footer">
+        <span>From observation to investigation.</span
+        ><span>Sentinel-1 radar · All times UTC</span>
+        <span id="live-status" role="status" aria-live="polite"
+          >Checking live AIS…</span
+        >
+      </footer>
+    </main>
+    <dialog id="scene-dialog" aria-labelledby="scene-dialog-title">
+      <div class="dialog-head">
+        <div>
+          <p class="eyebrow">Observation library</p>
+          <h2 id="scene-dialog-title">Choose a stretch of sea.</h2>
+        </div>
+        <button
+          class="close-button"
+          data-close="scene-dialog"
+          aria-label="Close scene chooser"
+        >
+          ×
+        </button>
+      </div>
+      <p class="muted">
+        Choose an observation, or add your own prepared radar image.
+      </p>
+      <form id="upload-form" class="upload-form">
+        <h3>Add a radar observation</h3>
+        <p class="muted">
+          Calibrated SAR GeoTIFF only, one or two bands, up to 256 MB. Optical
+          photographs are not supported.
+        </p>
+        <label for="upload-file">SAR image</label>
+        <input id="upload-file" type="file" accept=".tif,.tiff" required />
+        <label for="upload-time">Acquisition time · UTC</label>
+        <input id="upload-time" type="datetime-local" required />
+        <p class="muted">
+          Recorded AIS is fetched during analysis where MarineCadastre has
+          coverage. The first run can take several minutes. Wind and current
+          coverage may be unavailable.
+        </p>
+        <button id="upload-submit" type="submit" class="button">
+          Add observation ↗
+        </button>
+        <p id="upload-status" role="status" aria-live="polite"></p>
+      </form>
+      <div id="scene-list"></div>
+    </dialog>
+    <dialog id="settings-dialog" aria-labelledby="settings-title">
+      <div class="dialog-head">
+        <div>
+          <p class="eyebrow">Analysis settings</p>
+          <h2 id="settings-title">Set the search window.</h2>
+        </div>
+        <button
+          class="close-button"
+          data-close="settings-dialog"
+          aria-label="Close settings"
+        >
+          ×
+        </button>
+      </div>
+      <p class="muted">
+        These values apply to the next analysis. The defaults suit the demo
+        observations.
+      </p>
+      <form id="settings-form">
+        <div class="settings-grid">
+          <label
+            >Look back <span>Hours before the radar pass</span>
+            <div class="input-unit">
+              <input
+                id="hind"
+                type="number"
+                value="48"
+                min="6"
+                max="96"
+                step="1"
+                required
+              /><b>h</b>
+            </div></label
+          ><label
+            >Forecast <span>Hours after the radar pass</span>
+            <div class="input-unit">
+              <input
+                id="fore"
+                type="number"
+                value="36"
+                min="6"
+                max="96"
+                step="1"
+                required
+              /><b>h</b>
+            </div></label
+          ><label
+            >Search radius <span>Distance around the release zone</span>
+            <div class="input-unit">
+              <input
+                id="radius"
+                type="number"
+                value="10"
+                min="1"
+                max="60"
+                step="1"
+                required
+              /><b>km</b>
+            </div></label
+          ><label
+            >Time window <span>Either side of the estimated release</span>
+            <div class="input-unit">
+              <input
+                id="window"
+                type="number"
+                value="3"
+                min="0.5"
+                max="24"
+                step="0.5"
+                required
+              /><b>h</b>
+            </div></label
+          >
+        </div>
+        <button class="primary" type="submit">Apply settings</button>
+      </form>
+    </dialog>
+    <dialog id="help-dialog" aria-labelledby="help-title">
+      <div class="dialog-head">
+        <div>
+          <p class="eyebrow">A short field guide</p>
+          <h2 id="help-title">How to read NavTatva.</h2>
+        </div>
+        <button
+          class="close-button"
+          data-close="help-dialog"
+          aria-label="Close field guide"
+        >
+          ×
+        </button>
+      </div>
+      <ol class="guide">
+        <li>
+          <h3>Choose an observation</h3>
+          <p>
+            Each scene is a real Sentinel-1 radar image. The date is when the
+            satellite observed the water, not today's date.
+          </p>
+        </li>
+        <li>
+          <h3>Run the analysis</h3>
+          <p>
+            The detector looks for oil-like dark areas. Wind and current data
+            estimate a release zone and where the slick may travel next.
+          </p>
+        </li>
+        <li>
+          <h3>Follow the map</h3>
+          <p>
+            Orange outlines show detected oil; the red zone estimates its
+            origin. Blue marks the forecast. Toggle layers to isolate evidence,
+            and use the timeline to replay available vessel positions.
+          </p>
+        </li>
+        <li>
+          <h3>Inspect candidates</h3>
+          <p>
+            Vessels are ranked by location, timing, movement, type and
+            behaviour. The score is an investigation priority out of 100, not a
+            probability of guilt. Open a vessel to see its evidence and track.
+          </p>
+        </li>
+        <li>
+          <h3>Read the limitations</h3>
+          <p>
+            Simulated traffic is labelled. Missing AIS means attribution is
+            unavailable; clean water means there is no detected slick to
+            attribute. Download the report to keep the results and their
+            limitations together.
+          </p>
+        </li>
+      </ol>
+    </dialog>
+    <dialog id="live-ais-dialog" aria-labelledby="live-ais-title">
+      <div class="dialog-head">
+        <div>
+          <p class="eyebrow">Real-Time Vessel Stream</p>
+          <h2 id="live-ais-title">Live AIS Connection</h2>
+        </div>
+        <button
+          class="close-button"
+          data-close="live-ais-dialog"
+          aria-label="Close Live AIS setup"
+        >
+          ×
+        </button>
+      </div>
+      <p class="muted">
+        Connect to live global satellite and terrestrial AIS transponders via
+        <strong>AISStream.io</strong>. Get a free API key at
+        <a href="https://aisstream.io" target="_blank" rel="noopener">aisstream.io</a>.
+      </p>
+      <form id="ais-key-form" class="upload-form">
+        <label for="ais-key-input">AISStream API Key</label>
+        <input
+          id="ais-key-input"
+          type="password"
+          placeholder="Paste AISStream API key here…"
+          autocomplete="off"
+        />
+        <div class="dialog-button-row">
+          <button id="ais-key-save" type="submit" class="button">
+            Save &amp; Connect ↗
+          </button>
+          <button id="ais-key-clear" type="button" class="secondary">
+            Disconnect live AIS
+          </button>
+        </div>
+      </form>
+      <div class="ais-status-panel">
+        <div class="ais-status-item">
+          <span>Feed State:</span>
+          <strong id="ais-diag-state">Checking…</strong>
+        </div>
+        <div class="ais-status-item">
+          <span>Stream Mode:</span>
+          <strong id="ais-diag-mode">--</strong>
+        </div>
+        <div class="ais-status-item">
+          <span>Active Vessels:</span>
+          <strong id="ais-diag-vessels">--</strong>
+        </div>
+        <p id="ais-diag-msg" class="muted small"></p>
+      </div>
+    </dialog>
+    <script src="/static/vendor/leaflet/leaflet.js"></script>
+    <script src="/static/app.js?v=__V__"></script>
+  </body>
+</html>
