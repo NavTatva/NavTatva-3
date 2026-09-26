@@ -176,11 +176,7 @@ def configure_live_key(req: ConfigureKeyRequest) -> Dict[str, Any]:
 @router.post("/api/ais/live/clear")
 def clear_live_key() -> Dict[str, Any]:
     """Clear the configured key."""
-    if live.KEY_FILE.exists():
-        try:
-            live.KEY_FILE.unlink()
-        except OSError:
-            pass
+    live.clear_key()
     return {
         "ok": True,
         "configured": False,

@@ -18,11 +18,22 @@ from .recorder import Recorder
 WS_URL = 'wss://stream.aisstream.io/v0/stream'
 KEY_FILE = Path.home() / '.config' / 'navtatva' / 'aisstream.key'
 
+_cleared: bool = False
+_runtime_key: Optional[str] = None
 
-def read_key():
+
+def read_key() -> str:
     key = os.environ.get('AISSTREAM_API_KEY', '').strip()
     if key:
         return key
+    if _cleared:
+        return ''
+    if _runtime_key is not None:
+        return _runtime_key
+    # Prefer centralized configuration from app/config.py
+    config_key = getattr(config, 'AISSTREAM_API_KEY', '').strip()
+    if config_key:
+        return config_key
     try:
         return KEY_FILE.read_text().strip()
     except OSError:
@@ -31,12 +42,32 @@ def read_key():
 
 def save_key(api_key: str) -> bool:
     """Save an AISStream API key safely to the user's config directory."""
+    global _cleared, _runtime_key
+    _cleared = False
     api_key = api_key.strip()
+    _runtime_key = api_key
     KEY_FILE.parent.mkdir(parents=True, exist_ok=True)
     fd = os.open(KEY_FILE, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
     with os.fdopen(fd, 'w', encoding='utf-8') as output:
-        os.fchmod(output.fileno(), 0o600)
+        if hasattr(os, 'fchmod'):
+            try:
+                os.fchmod(output.fileno(), 0o600)
+            except OSError:
+                pass
         output.write(api_key)
+    return True
+
+
+def clear_key() -> bool:
+    """Clear the live AIS key."""
+    global _cleared, _runtime_key
+    _cleared = True
+    _runtime_key = None
+    if KEY_FILE.exists():
+        try:
+            KEY_FILE.unlink()
+        except OSError:
+            pass
     return True
 
 

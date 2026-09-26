@@ -82,6 +82,12 @@ WEIGHTS = {
 OFFLINE = _b("TIDETRACE_OFFLINE", True)
 OPEN_METEO_LIVE = _b("TIDETRACE_OPEN_METEO_LIVE", False)
 
+# ----------------------------------------------------------------------------
+# Live AIS (AISStream) Configuration
+# Change your API key directly below to update it across the entire project:
+# ----------------------------------------------------------------------------
+AISSTREAM_API_KEY = os.environ.get("AISSTREAM_API_KEY", "12a28c6c53e8526cfe02f279f3d9fbee137576d9")
+
 # Ensemble noise, spec: "current noise 0.1 m/s, wind noise 1 m/s"
 CURRENT_NOISE_MS = _f("TIDETRACE_CURRENT_NOISE", 0.1)
 WIND_NOISE_MS = _f("TIDETRACE_WIND_NOISE", 1.0)

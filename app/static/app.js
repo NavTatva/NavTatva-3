@@ -1724,7 +1724,7 @@
       });
     });
 
-    var liveAisEl = $("live-ais-open") || $("live-ais-badge");
+    var liveAisEl = $("live-ais-badge");
     if (liveAisEl) {
       liveAisEl.addEventListener("click", function (e) {
         e.preventDefault();

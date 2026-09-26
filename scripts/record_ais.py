@@ -141,10 +141,11 @@ def main() -> int:
                     help="defaults to $AISSTREAM_API_KEY; never stored")
     args = ap.parse_args()
 
-    api_key = args.api_key or os.environ.get("AISSTREAM_API_KEY", "")
+    from app import config as app_config
+    api_key = args.api_key or os.environ.get("AISSTREAM_API_KEY", "") or getattr(app_config, "AISSTREAM_API_KEY", "")
     if not api_key:
         raise SystemExit(
-            "No API key. Set AISSTREAM_API_KEY in the environment or pass --api-key.\n"
+            "No API key. Set AISSTREAM_API_KEY in app/config.py, set the environment variable, or pass --api-key.\n"
             "It is read at run time and never written to the repository.")
 
     if args.bbox:
