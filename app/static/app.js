@@ -482,9 +482,9 @@
       var p = f.properties;
       L.polygon(ringToLatLng(f.geometry.coordinates[0]), {
         color: MAPC.oil,
-        weight: 2,
+        weight: 2.5,
         fillColor: MAPC.oil,
-        fillOpacity: 0.24,
+        fillOpacity: 0.35,
       })
         .bindPopup(
           "<b>" +
@@ -555,10 +555,10 @@
     if (d.cone_back && d.cone_back.geometry) {
       L.polygon(ringToLatLng(d.cone_back.geometry.coordinates[0]), {
         color: MAPC.hindEdge,
-        weight: 1,
-        dashArray: "3,4",
+        weight: 1.5,
+        dashArray: "4,4",
         fillColor: MAPC.hindFill,
-        fillOpacity: 0.1,
+        fillOpacity: 0.16,
       })
         .bindPopup(
           "Hindcast cone, swept 90 percent ensemble<br>area " +
@@ -571,7 +571,7 @@
     [["hindcast", MAPC.hind], ["forecast", MAPC.fore]].forEach(function (entry) {
       var paths = d[entry[0] + "_particles"];
       (paths && paths.geometry ? paths.geometry.coordinates : []).forEach(function (coords) {
-        L.polyline(ringToLatLng(coords), {color: entry[1], weight: 1, opacity: 0.22, smoothFactor: 0})
+        L.polyline(ringToLatLng(coords), {color: entry[1], weight: 1.2, opacity: 0.32, smoothFactor: 0})
           .bindTooltip("Model ensemble member · plausible drift, not a vessel track")
           .addTo(layerGroup[entry[0]]);
       });
@@ -580,9 +580,9 @@
     if (d.hindcast_track && d.hindcast_track.geometry) {
       L.polyline(ringToLatLng(d.hindcast_track.geometry.coordinates), {
         color: MAPC.hind,
-        weight: 2,
-        dashArray: "2,6",
-        opacity: 0.9,
+        weight: 2.5,
+        dashArray: "3,5",
+        opacity: 0.95,
       })
         .bindPopup("Ensemble median backtrack")
         .addTo(layerGroup.hindcast);
@@ -591,9 +591,9 @@
     if (d.origin_zone && d.origin_zone.geometry) {
       L.polygon(ringToLatLng(d.origin_zone.geometry.coordinates[0]), {
         color: MAPC.origin,
-        weight: 2,
+        weight: 2.5,
         fillColor: MAPC.origin,
-        fillOpacity: 0.18,
+        fillOpacity: 0.22,
       })
         .bindPopup(
           "<b>Origin zone</b><br>" +
@@ -612,9 +612,9 @@
         .addTo(layerGroup.origin);
 
       L.circleMarker([d.origin.lat, d.origin.lon], {
-        radius: 4,
+        radius: 5,
         color: "#ffffff",
-        weight: 2,
+        weight: 2.5,
         fillColor: MAPC.origin,
         fillOpacity: 1,
       })
@@ -625,9 +625,9 @@
     if (d.cone_fwd && d.cone_fwd.geometry) {
       L.polygon(ringToLatLng(d.cone_fwd.geometry.coordinates[0]), {
         color: MAPC.fore,
-        weight: 1.5,
+        weight: 1.8,
         fillColor: MAPC.fore,
-        fillOpacity: 0.1,
+        fillOpacity: 0.14,
       })
         .bindPopup(
           "Forecast cone " +
@@ -641,7 +641,7 @@
     if (d.forecast_track && d.forecast_track.geometry) {
       L.polyline(ringToLatLng(d.forecast_track.geometry.coordinates), {
         color: MAPC.fore,
-        weight: 2,
+        weight: 2.5,
         opacity: 0.95,
         dashArray: "6,4",
       })
@@ -650,45 +650,49 @@
     }
   }
 
-  /* The map's own palette, kept in one place so it cannot drift away from the
-     stylesheet. Amber is the case under investigation, cyan is the forecast,
-     and everything else is slate. */
+  /* Distinct vibrant map palette for marine observation and drift modeling.
+     Oil is solar amber, lookalikes are amethyst violet, origin is radiant crimson-coral,
+     backtrack is glowing rose, forecast is electric cyan, and AIS gaps are hazard red. */
   var MAPC = {
-    oil: "#e89550",
-    lookalike: "#b9a05e",
-    hind: "#e0b98d",
-    hindEdge: "#c9a37c",
-    hindFill: "#8a6a4c",
-    origin: "#e8734a",
-    fore: "#4fb8dd",
-    gap: "#cc5b4e",
+    oil: "#ffaa00", // Radiant solar amber
+    lookalike: "#a855f7", // Amethyst violet
+    hind: "#ff5376", // Rose-coral backtrack trajectory
+    hindEdge: "#e11d48", // Crimson-rose cone border
+    hindFill: "#fda4af", // Translucent rose cone fill
+    origin: "#ff2a5f", // Luminous crimson-coral release zone
+    fore: "#00e5ff", // Hyper-electric cyan forecast
+    gap: "#ff1744", // High-visibility hazard red for AIS gaps
   };
 
-  /* Rank 1 is amber like the release zone it is being connected to. Ranks 2-3
-     step down through it, and everything below that is slate: the leaderboard
-     already carries the ordering, and ten distinct hues on a chart is noise. */
+  /* Distinct multi-hue ranked hierarchy for vessel suspects:
+     Rank 1: Vibrant Sunfire Gold (cuts through crimson origin zone with 100% contrast)
+     Rank 2: Electric Seafoam Emerald
+     Rank 3: Radiant Sky Azure
+     Rank 4: Modern Violet-Indigo
+     Rank 5: Bright Marine Teal
+     Ranks 6+: Crisp Moonlight Slate */
   var RANK_COLORS = [
-    "#e8734a",
-    "#e89550",
-    "#c9a06a",
-    "#8fa6b5",
-    "#8fa6b5",
-    "#8fa6b5",
-    "#8fa6b5",
-    "#8fa6b5",
-    "#8fa6b5",
-    "#8fa6b5",
+    "#ffd000", // Rank 1: Sunfire Gold / Bright Yellow
+    "#00e676", // Rank 2: Electric Mint / Emerald
+    "#00b0ff", // Rank 3: Radiant Sky Azure
+    "#a855f7", // Rank 4: Electric Violet
+    "#14b8a6", // Rank 5: Marine Teal
+    "#94a3b8", // Rank 6: Moonlight Slate
+    "#94a3b8",
+    "#94a3b8",
+    "#94a3b8",
+    "#94a3b8",
   ];
 
   function rankColor(rank) {
-    return RANK_COLORS[Math.min(rank - 1, RANK_COLORS.length - 1)] || "#8fa6b5";
+    return RANK_COLORS[Math.min(rank - 1, RANK_COLORS.length - 1)] || "#94a3b8";
   }
 
   function drawTracks(suspects) {
     layerGroup.tracks.clearLayers();
     suspects.forEach(function (s) {
       var color = rankColor(s.rank);
-      var weight = s.rank === 1 ? 4 : s.rank <= 3 ? 2.5 : 1.6;
+      var weight = s.rank === 1 ? 4 : s.rank === 2 ? 3 : s.rank === 3 ? 2.5 : 1.6;
       var gj = (s.track || {}).geojson;
       if (!gj) return;
       gj.features.forEach(function (f) {
@@ -697,9 +701,9 @@
         var simulated = String(f.properties.source || "").indexOf("simulated") >= 0;
         L.polyline(ringToLatLng(f.geometry.coordinates), {
           color: dr ? MAPC.gap : color,
-          weight: dr ? Math.max(weight, 3) : weight,
-          opacity: dr ? 0.95 : 0.8,
-          dashArray: dr ? "7,5" : simulated ? "3,6" : null,
+          weight: dr ? Math.max(weight, 3.2) : weight,
+          opacity: dr ? 0.95 : s.rank <= 3 ? 0.95 : 0.65,
+          dashArray: dr ? "6,4" : simulated ? "3,6" : null,
           smoothFactor: 0,
         })
           .bindPopup(
@@ -790,11 +794,11 @@
       if (!p) return;
       var color = rankColor(s.rank);
       L.circleMarker([p.lat, p.lon], {
-        radius: s.rank === 1 ? 6 : 4,
-        color: p.dr ? MAPC.gap : "#04101a",
-        weight: p.dr ? 2 : 1,
+        radius: s.rank === 1 ? 7 : s.rank <= 3 ? 5 : 4,
+        color: p.dr ? MAPC.gap : "#0f172a",
+        weight: p.dr ? 2.5 : 1.5,
         fillColor: color,
-        fillOpacity: p.dr ? 0.45 : 1,
+        fillOpacity: p.dr ? 0.6 : 1,
       })
         .bindTooltip(
           "#" +
@@ -814,8 +818,8 @@
       if (s.rank === 1) {
         L.marker([p.lat, p.lon], {
           icon: L.divIcon({
-            className: "vessel-label",
-            html: s.name || "UNKNOWN",
+            className: "vessel-label rank-1-label",
+            html: (s.name || "UNKNOWN") + " · #1",
             iconAnchor: [-9, 6],
           }),
           interactive: false,
@@ -1179,7 +1183,7 @@
       var card = el("details", "vessel"),
         summary = el("summary");
       card.dataset.mmsi = s.mmsi;
-      summary.appendChild(el("span", "rank", String(s.rank).padStart(2, "0")));
+      summary.appendChild(el("span", "rank rank-" + s.rank, String(s.rank).padStart(2, "0")));
       var name = el("span");
       name.appendChild(el("span", "vessel-name", s.name || "Unknown vessel"));
       name.appendChild(
@@ -1459,20 +1463,23 @@
   }
   function renderLayers() {
     var defs = [
-      [["optical"], "Optical cross-check", false],
-      [["sar", "mask"], "Radar image", true],
-      [["oil", "lookalike"], "Detected slicks", true],
-      [["origin", "hindcast", "cone_back"], "Origin & backtrack", true],
-      [["forecast", "cone_fwd"], "Forecast", true],
-      [["tracks", "vessels"], "Recorded vessel traffic", true],
+      [["optical"], "Optical cross-check", false, "optical"],
+      [["sar", "mask"], "Radar image", true, "sar"],
+      [["oil", "lookalike"], "Detected slicks", true, "oil"],
+      [["origin", "hindcast", "cone_back"], "Origin & backtrack", true, "origin"],
+      [["forecast", "cone_fwd"], "Forecast", true, "forecast"],
+      [["tracks", "vessels"], "Recorded vessel traffic", true, "traffic"],
     ];
     var box = $("layers");
     box.replaceChildren();
     defs.forEach(function (d) {
-      var label = el("label"),
-        cb = document.createElement("input");
+      var label = el("label", "layer-item layer-" + d[3]),
+        cb = document.createElement("input"),
+        swatch = el("span", "layer-swatch " + d[3]),
+        title = el("span", "layer-title", d[1]);
       cb.type = "checkbox";
       cb.checked = d[2];
+      cb.className = "layer-check";
       cb.addEventListener("change", function () {
         d[0].forEach(function (k) {
           if (cb.checked) map.addLayer(layerGroup[k]);
@@ -1480,7 +1487,8 @@
         });
       });
       label.appendChild(cb);
-      label.appendChild(document.createTextNode(d[1]));
+      label.appendChild(swatch);
+      label.appendChild(title);
       box.appendChild(label);
     });
   }
