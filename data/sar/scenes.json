@@ -1,5 +1,5 @@
 {
-  "generated": "2026-09-22T04:55:25.404922+00:00",
+  "generated": "2026-10-22T15:51:25.644131+00:00",
   "scenes": [
     {
       "id": "gom_mc20_chronic_slick",
@@ -102,6 +102,32 @@
       "license": "Contains modified Copernicus Sentinel data. Sentinel-1 RTC hosted by Microsoft Planetary Computer, CC BY 4.0.",
       "ais_mode": "real",
       "notes": "Natural hydrocarbon seeps plus heavy shipping. Inside NAIS coverage. Useful as a hard case: real dark films that are not a vessel discharge.",
+      "selftest": false,
+      "extra": {}
+    },
+    {
+      "id": "upload_b165680ae33e4966ba3981087b6e61cb",
+      "title": "demo_sar_scene",
+      "sar_path": "sar/upload_b165680ae33e4966ba3981087b6e61cb.tif",
+      "t_sat": "2025-04-23T23:11:00+00:00",
+      "bounds": [
+        87.9745,
+        11.9745,
+        88.0255,
+        12.0255
+      ],
+      "centroid": [
+        88.0001,
+        11.9999
+      ],
+      "crs": "EPSG:4326",
+      "mask_path": null,
+      "thumbnail": null,
+      "backdrop": null,
+      "source": "uploaded",
+      "license": "",
+      "ais_mode": "unavailable",
+      "notes": "User-supplied calibrated SAR. AIS fetched on demand; environmental coverage must be checked.",
       "selftest": false,
       "extra": {}
     }
