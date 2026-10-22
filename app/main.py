@@ -17,6 +17,14 @@ import time
 from contextlib import asynccontextmanager
 from pathlib import Path
 
+from dotenv import load_dotenv
+
+# Load .env before any app.config import so that every os.environ.get() in
+# config.py sees the values from the file. On Render/Vercel the platform
+# injects env vars directly, so load_dotenv() is a no-op there (it never
+# overwrites a variable that is already set in the environment).
+load_dotenv(Path(__file__).resolve().parent.parent / ".env", override=False)
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -138,9 +146,19 @@ def index():
     new script with an old DOM, and the console then fails on an element that
     does not exist yet. Hashing the assets into their URLs and refusing to cache
     the shell makes that combination impossible.
+
+    Two placeholders are substituted at serve time so that no URL or version
+    string ever needs to be hardcoded in the static file:
+
+      __V__       → content-addressed asset stamp (cache busting)
+      __API_URL__ → value of API_BASE_URL from .env / platform env vars
     """
     page = Path(config.STATIC_DIR) / "index.html"
     if not page.exists():
         return JSONResponse({"error": "static/index.html is missing"}, status_code=500)
-    html = page.read_text(encoding="utf-8").replace("__V__", _asset_stamp())
+    html = (
+        page.read_text(encoding="utf-8")
+        .replace("__V__", _asset_stamp())
+        .replace("__API_URL__", config.API_BASE_URL)
+    )
     return HTMLResponse(html, headers={"Cache-Control": "no-store, must-revalidate"})

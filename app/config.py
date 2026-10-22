@@ -83,10 +83,18 @@ OFFLINE = _b("TIDETRACE_OFFLINE", True)
 OPEN_METEO_LIVE = _b("TIDETRACE_OPEN_METEO_LIVE", False)
 
 # ----------------------------------------------------------------------------
+# Frontend / deployment
+# ----------------------------------------------------------------------------
+# The URL the browser uses to reach the backend API.
+# Locally this is http://localhost:8000; on Render/Vercel set API_BASE_URL in
+# the platform's environment variable panel (or in .env for local runs).
+API_BASE_URL = os.environ.get("API_BASE_URL", "http://localhost:8000")
+
+# ----------------------------------------------------------------------------
 # Live AIS (AISStream) Configuration
 # Change your API key directly below to update it across the entire project:
 # ----------------------------------------------------------------------------
-AISSTREAM_API_KEY = os.environ.get("AISSTREAM_API_KEY", "12a28c6c53e8526cfe02f279f3d9fbee137576d9")
+AISSTREAM_API_KEY = os.environ.get("AISSTREAM_API_KEY", "")
 
 # Ensemble noise, spec: "current noise 0.1 m/s, wind noise 1 m/s"
 CURRENT_NOISE_MS = _f("TIDETRACE_CURRENT_NOISE", 0.1)
