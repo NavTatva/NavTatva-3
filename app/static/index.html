@@ -407,6 +407,12 @@
       </div>
     </dialog>
     <script src="/static/vendor/leaflet/leaflet.js"></script>
+    <script>
+      // Set API base URL from environment or default to same origin
+      window.API_BASE_URL = window.location.hostname === 'localhost' 
+        ? 'http://localhost:8000'
+        : 'https://your-backend-url.onrender.com';
+    </script>
     <script src="/static/app.js?v=__V__"></script>
   </body>
 </html>

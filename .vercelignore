@@ -1,0 +1,22 @@
+# Vercel - Frontend only
+app/api/
+app/ais/
+app/drift/
+app/eo/
+app/geo/
+app/jobs/
+app/ml/
+app/viz/
+app/*.py
+scripts/
+tests/
+data/
+models/
+*.pyc
+__pycache__/
+.pytest_cache/
+.venv/
+venv/
+*.log
+.env
+.env.local

@@ -5,7 +5,7 @@
 (function () {
   "use strict";
 
-  var API = "";
+  var API = window.API_BASE_URL || "";
   var state = {
     scenes: [],
     scene: null,

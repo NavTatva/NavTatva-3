@@ -1,0 +1,25 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "app/static/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/static/(.*)",
+      "dest": "/app/static/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/app/static/index.html"
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://your-backend-url.onrender.com/api/:path*"
+    }
+  ]
+}

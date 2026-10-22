@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: navtatva-backend
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt && python scripts/bootstrap_demo.py --minimal
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: TIDETRACE_OFFLINE
+        value: 1
+      - key: PORT
+        generateValue: true
+    autoDeploy: true
+    healthCheckPath: /api/health
